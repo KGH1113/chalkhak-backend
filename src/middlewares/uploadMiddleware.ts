@@ -1,5 +1,6 @@
 import multer from "multer";
 import path from "path";
+import { randomUUID } from "crypto";
 
 // Set storage engine for multer
 const storage = multer.diskStorage({
@@ -7,7 +8,8 @@ const storage = multer.diskStorage({
     cb(null, "data/uploads"); // Ensure this directory exists
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    const uuid = `media:${randomUUID()}`;
+    cb(null, `${Date.now()}-${uuid}${path.extname(file.originalname)}`);
   },
 });
 

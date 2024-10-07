@@ -15,6 +15,9 @@ const app: Application = express();
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Server static files (uploaded files)
+app.use('/uploads', express.static('data/uploads'));
+
 createUserTable();
 createPostTable();
 createFollowsTable();

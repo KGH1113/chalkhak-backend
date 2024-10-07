@@ -86,9 +86,11 @@ export async function uploadFile(req: Request, res: Response) {
   }
 
   // File uploaded successfully
-  const filePath = `/uploads/${req.file!.filename}`;
+  const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${
+    req.file!.filename
+  }`;
   res.status(200).json({
     message: "File uploaded successfully.",
-    filePath,
+    fileUrl,
   });
 }
