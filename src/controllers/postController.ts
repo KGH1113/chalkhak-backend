@@ -83,6 +83,7 @@ export async function getPost(req: Request, res: Response) {
 export async function uploadFile(req: Request, res: Response) {
   if (!req.file) {
     res.status(400).json({ message: "No file uploaded" });
+    return;
   }
 
   // File uploaded successfully
