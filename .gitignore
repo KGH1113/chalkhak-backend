@@ -8,3 +8,5 @@ package-lock.json
 *.database
 
 data/uploads/*
+
+dist/
