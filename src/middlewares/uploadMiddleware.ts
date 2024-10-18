@@ -35,7 +35,7 @@ function fileFilter(
 // Maximum file size (100MB)
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 100 * 1024 * 1024 },
   fileFilter,
 });
 
