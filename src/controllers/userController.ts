@@ -158,3 +158,26 @@ export async function getFollowings(
     res.status(500).json({ error: "Error getting followers" });
   }
 }
+
+export async function getUser(req: Request, res: Response) {
+  const { userId } = req.body;
+  try {
+    const user = await findUserByUserId(userId);
+    if (!user?.isPrivate) {
+      res.status(200).json(user);
+      return;
+    }
+    const targetUserFollowers = await findFollowers(userId);
+    const requestedUserFollowers = await findFollowers(req.user.userId);
+    if (
+      targetUserFollowers?.includes(req.user.userId) &&
+      requestedUserFollowers?.includes(userId)
+    ) {
+      res.status(200).json(user);
+    } else {
+      res.status(400).json({ error: "Account is private" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: "Error getting user" });
+  }
+}

@@ -8,6 +8,7 @@ import {
   unFollowUser,
   getFollowings,
   getFollowers,
+  getUser,
 } from "../controllers/userController";
 import { authenticateJWT } from "../middlewares/authMiddleware";
 
@@ -36,5 +37,8 @@ router.get("/followers", authenticateJWT, getFollowers);
 
 // Get followings
 router.get("/followings", authenticateJWT, getFollowings);
+
+// Get user by userId
+router.post("/get", authenticateJWT, getUser);
 
 export default router;
