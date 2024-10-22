@@ -16,7 +16,10 @@ const app: Application = express();
 app.use(express.json());
 
 // Server static files (uploaded files)
-app.use('/uploads', express.static('data/uploads'));
+app.use("/uploads", express.static("data/uploads"));
+
+// Trust the X-Forwarded-Proto header (HTTPS)
+app.set("trust proxy", true);
 
 createUserTable();
 createPostTable();
