@@ -1,8 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { getJwtSecret } from "../config/jwtSecret";
+import { getAccessTokenSecret } from "../config/jwtSecret";
 
-const JWT_SECRET = getJwtSecret();
+const accessTokenSecret = getAccessTokenSecret();
 
 // Middleware to verify JWT
 export function authenticateJWT(
@@ -16,7 +16,7 @@ export function authenticateJWT(
     return;
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, accessTokenSecret, (err, user) => {
     if (err) {
       res.status(403).json({ error: "Invalid token" });
       return;

@@ -1,9 +1,6 @@
 import { Router } from "express";
 import {
-  register,
-  login,
   editUser,
-  protectedRoute,
   followUser,
   unFollowUser,
   getFollowings,
@@ -14,17 +11,8 @@ import { authenticateJWT } from "../middlewares/authMiddleware";
 
 const router = Router();
 
-// Register route
-router.post("/register", register);
-
-// Login route
-router.post("/login", login);
-
 // Update user details route (requires JWT)
 router.put("/edit", authenticateJWT, editUser);
-
-// Protected route (requires JWT)
-router.get("/protected", authenticateJWT, protectedRoute);
 
 // Following user
 router.post("/follow", authenticateJWT, followUser);

@@ -1,80 +1,12 @@
 import { Request, Response } from "express";
-import { hash, compare } from "bcryptjs";
-import jwt from "jsonwebtoken";
-import {
-  User,
-  insertUser,
-  updateUser,
-  findUserByUserId,
-  findUserByUsername,
-  findUserByEmail,
-} from "../models/userModel";
-import { getJwtSecret } from "../config/jwtSecret";
+import * as bcrypt from "bcryptjs";
+import { User, updateUser, findUserByUserId } from "../models/userModel";
 import {
   createFollow,
   delteFollow,
   findFollowers,
   findFollowings,
 } from "../models/followModel";
-
-const JWT_SECRET = getJwtSecret();
-
-// Register a new user
-export async function register(req: Request, res: Response): Promise<void> {
-  const { username, email, password, isPrivate } = req.body;
-  try {
-    const hashedPassword = await hash(password, 10);
-    const userId = await insertUser({
-      username,
-      email,
-      password: hashedPassword,
-      isPrivate,
-    });
-    res.status(201).json({ message: "User registered successfully", userId });
-  } catch (err) {
-    res.status(400).json({ error: "Error registering user" });
-  }
-}
-
-// Login user and issue JWT
-export async function login(req: Request, res: Response): Promise<void> {
-  const { username, email, password } = req.body;
-  try {
-    let user: User | undefined;
-    if (!username) {
-      user = await findUserByEmail(email);
-    } else {
-      user = await findUserByUsername(username);
-    }
-    if (!user) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-
-    const isPasswordValid = await compare(password, user.password);
-    if (!isPasswordValid) {
-      res.status(401).json({ error: "Invalid password" });
-      return;
-    }
-
-    const token = jwt.sign(
-      {
-        userId: user.userId,
-        username: user.username,
-        email: user.email,
-        fullName: !user.fullName ? "" : user.fullName,
-        profilePictureUrl: !user.profilePictureUrl
-          ? ""
-          : user.profilePictureUrl,
-      },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    res.json({ message: "Login successful", token });
-  } catch (err) {
-    res.status(500).json({ error: "Error logging in" });
-  }
-}
 
 // Update user details
 export async function editUser(req: Request, res: Response): Promise<void> {
@@ -90,7 +22,7 @@ export async function editUser(req: Request, res: Response): Promise<void> {
   const userId = req.user.userId;
 
   try {
-    const hashedPassword = await hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     await updateUser(userId, {
       username,
       email,
@@ -105,17 +37,6 @@ export async function editUser(req: Request, res: Response): Promise<void> {
     console.log(err);
     res.status(500).json({ error: "Error updating user" });
   }
-}
-
-// Protected route (requires valid JWT)
-export function protectedRoute(req: Request, res: Response): void {
-  const user = req.user as User;
-  res.json({
-    message: `Welcome, user with userId "${user.userId}"! This is a protected route.`,
-    user: {
-      ...user,
-    },
-  });
 }
 
 export async function followUser(req: Request, res: Response): Promise<void> {
@@ -163,8 +84,18 @@ export async function getUser(req: Request, res: Response) {
   const { userId } = req.body;
   try {
     const user = await findUserByUserId(userId);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
     if (!user?.isPrivate) {
-      res.status(200).json(user);
+      const result = Object.entries(user)
+        .filter(([key]) => key !== "password")
+        .reduce((obj: any, [key, value]: any) => {
+          obj[key] = value;
+          return obj;
+        }, {});
+      res.status(200).json(result);
       return;
     }
     const targetUserFollowers = await findFollowers(userId);
@@ -173,7 +104,13 @@ export async function getUser(req: Request, res: Response) {
       targetUserFollowers?.includes(req.user.userId) &&
       requestedUserFollowers?.includes(userId)
     ) {
-      res.status(200).json(user);
+      const result = Object.entries(user)
+        .filter(([key]) => key !== "password")
+        .reduce((obj: any, [key, value]: any) => {
+          obj[key] = value;
+          return obj;
+        }, {});
+      res.status(200).json(result);
     } else {
       res.status(400).json({ error: "Account is private" });
     }

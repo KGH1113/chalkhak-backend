@@ -1,9 +1,11 @@
 import dotenv from "dotenv";
 import express, { Application } from "express";
 
+import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import postRoutes from "./routes/postRoutes";
 
+import { createRefreshTokensTable } from "./models/RefreshTokenModel";
 import { createUserTable } from "./models/userModel";
 import { createPostTable } from "./models/postModel";
 import { createFollowsTable } from "./models/followModel";
@@ -21,9 +23,12 @@ app.use("/uploads", express.static("data/uploads"));
 // Trust the X-Forwarded-Proto header (HTTPS)
 app.set("trust proxy", true);
 
+createRefreshTokensTable();
 createUserTable();
 createPostTable();
 createFollowsTable();
+
+app.use("/api/auth", authRoutes);
 
 app.use("/api/users", userRoutes);
 
