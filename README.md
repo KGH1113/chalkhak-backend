@@ -29,8 +29,7 @@
 - **Backend**: Node.js, Express, TypeScript
 - **Authentication**: JWT (JSON Web Tokens)
 - **File Upload**: Multer
-- **Database**: SQLite (for development)
-- **Geolocation**: Integrated with map-based UI (details not included here)
+- **Database**: SQLite
   
 ## Installation
 
@@ -80,7 +79,7 @@ To run this project locally, follow these steps:
 ### Auth Endpoints
 
 - **POST** `/api/auth/register`
-  Register a new user
+  Register a new user.
   **Body**:
   ```json
   {
