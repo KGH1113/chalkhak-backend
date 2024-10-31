@@ -58,7 +58,8 @@ To run this project locally, follow these steps:
 
    ```bash
    PORT=3000
-   JWT_SECRET=your_jwt_secret_key
+   ACCESS_TOKEN_SECRET=your_access_token_jwt_secret_key
+   REFRESH_TOKEN_SECRET=refresh_token_jwt_secret_key
    ```
 
 5. **Run the server**:
@@ -76,10 +77,10 @@ To run this project locally, follow these steps:
 
 ## API Endpoints
 
-### User Endpoints
+### Auth Endpoints
 
-- **POST** `/api/users/register`  
-  Register a new user.  
+- **POST** `/api/auth/register`
+  Register a new user
   **Body**:
   ```json
   {
@@ -90,7 +91,7 @@ To run this project locally, follow these steps:
   }
   ```
 
-- **POST** `/api/users/login`  
+- **POST** `/api/auth/login`  
   Log in an existing user. If either email or username is an empty string, the non-empty one is used for logging in.  
   **Body**:
   ```json
@@ -100,6 +101,20 @@ To run this project locally, follow these steps:
     "password": "string"
   }
   ```
+
+- **POST** `/api/auth/refresh-token`  
+  Refreshing the access token using refresh token.  
+  **Body**:
+  ```json
+  {
+    "token":"string"
+  }
+  ```
+
+- **GET** `/api/auth/protected`
+  Protected route. Requires JWT.
+
+### User Endpoints
 
 - **PUT** `/api/users/edit`  
   Update user profile. Requires JWT.  
@@ -116,11 +131,38 @@ To run this project locally, follow these steps:
   }
   ```
 
+- **POST** `/api/users/follow`  
+  Following the user. Requires JWT.  
+  **Body**:
+  ```json
+  {
+    "followedId":"string"
+  }
+  ```
+
+- **POST** `/api/users/unfollow`  
+  Unfollowing the user. Requires JWT.  
+  **Body**:
+  ```json
+  {
+    "followedId":"string"
+  }
+  ```
+
+- **POST** `/api/users/get`  
+  Get a user data by userId. Requires JWT.  
+  **Body**:
+  ```json
+  {
+    "userId":"string"
+  }
+  ```
+
 - **GET** `/api/users/followers`  
-  Get a list of followers for the authenticated user.
+  Get a list of followers for the authenticated user. Requires JWT.
 
 - **GET** `/api/users/followings`  
-  Get a list of followings for the authenticated user.
+  Get a list of followings for the authenticated user. Requires JWT.
 
 ### Post Endpoints
 
@@ -150,9 +192,9 @@ To run this project locally, follow these steps:
   ```
 
 - **GET** `/api/posts/get`  
-  Get a posts that is uploaded specific . Requires JWT.  
+  Get a posts that is uploaded specific date. If there is nothing in query param, posts uploaded recent 7days will given. Requires JWT.  
   **Query Params**:
-  - `postId`: The date the post was uploaded
+  - `date`: The date the post was uploaded
 
 - **POST** `/api/posts/upload-media`  
   Upload media (image or video) to an existing post. Requires JWT.  
@@ -166,8 +208,9 @@ The project uses SQLite for development purposes, and the database structure inc
 - **Users**: Stores user data including username, email, password, bio, etc.
 - **Posts**: Contains post data, including the text content, location (latitude/longitude), and associated media files.
 - **Follows**: Manages user follow relationships (who follows whom).
+- **Refresh Tokens**: Manages refresh tokens.
 
-### Example SQLite Schema
+### SQLite Schema
 
 - `users`: 
   ```sql
@@ -204,6 +247,18 @@ The project uses SQLite for development purposes, and the database structure inc
     followerId TEXT REFERENCES users(userId),
     followedId TEXT REFERENCES users(userId),
     PRIMARY KEY(followerId, followedId)
+  )
+  ```
+
+- `refreshTokens`:
+  ```sql
+  CREATE TABLE IF NOT EXISTS refreshTokens (
+    id TEXT PRIMARY KEY,
+    userId TEXT NOT NULL,
+    token TEXT NOT NULL,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expiresAt DATETIME NOT NULL,
+    FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
   )
   ```
 
